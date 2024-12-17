@@ -2,7 +2,7 @@
   "name": "supabase-demo",
   "version": "1.0.0",
   "description": "A simple project to display items from a Supabase database on a webpage.",
-  "main": "public/script.js",
+  "main": "script.js",
   "scripts": {
     "start": "npx http-server public"
   },
