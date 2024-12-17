@@ -154,4 +154,10 @@ function downloadItems() {
 }
 
 // Load items on page load
-window.onload = fetchItems;
+window.onload = function() {
+    // Initialize addItem button click event listener
+    document.getElementById('add-item-btn').addEventListener('click', addItem);
+
+    // Fetch the items from Supabase
+    fetchItems();
+}
