@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin and Customer Pages 22</title>
+    <title>Admin and Customer Pages</title>
     <!-- Add Supabase client script -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.0.0/dist/umd/supabase.min.js"></script>
+    <script type="module" src="script2.js"></script> <!-- External JavaScript file -->
 </head>
 <body>
 
 <div class="admin-container" id="admin-container">
-    <h1>Admin Page 2</h1>
+    <h1>Admin Page 33</h1>
     <div>
         <label for="upc">UPC Code:</label>
         <input type="text" id="upc" placeholder="Enter UPC Code">
@@ -25,141 +25,6 @@
     <!-- Button to download items as JSON -->
     <button onclick="downloadItems()">Download Items as JSON</button>
 </div>
-
-<script>
-    // Initialize Supabase client
-    const SUPABASE_URL = 'https://ymyztsxdqmiklnsjurhq.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXp0c3hkcW1pa2xuc2p1cmhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQyNDA3MzQsImV4cCI6MjA0OTgxNjczNH0.dGJ9LjCTGvGzUrSQfln_nxiIrxXNBy57Z98b8G7yZqk';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Function to fetch item data using the UPC
-    async function getItemData(upc) {
-        const url = `https://www.homedepot.com/s/${upc}`;
-        try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-
-            const html = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-
-            const metaTag = doc.querySelector('meta[property="og:title"]');
-            const titleTag = doc.querySelector('title');
-            const title = metaTag ? metaTag.getAttribute('content') : titleTag ? titleTag.textContent.trim() : 'Title not found';
-            const imgTag = doc.querySelector('img');
-            const img = imgTag ? imgTag.getAttribute('src') : null;
-
-            return {
-                name: title,
-                img: img,
-                link: url
-            };
-        } catch (error) {
-            console.error('Error fetching item data:', error);
-            return { name: 'Error fetching data', img: null, link: url };
-        }
-    }
-
-    // Function to add a new item to Supabase
-    async function addItem() {
-        const upc = document.getElementById('upc').value;
-        const quantity = document.getElementById('quantity').value;
-
-        if (!upc || !quantity) {
-            alert('Please enter UPC code and quantity.');
-            return;
-        }
-
-        const itemData = await getItemData(upc);
-
-        // Save to Supabase
-        const { data, error } = await supabase
-            .from('items')
-            .insert([
-                {
-                    name: itemData.name,
-                    upc: upc,
-                    quantity: parseInt(quantity, 10),
-                    img: itemData.img,
-                    link: itemData.link
-                }
-            ]);
-
-        if (error) {
-            console.error('Error adding item:', error);
-        } else {
-            alert('Item added successfully');
-            fetchItems(); // Refresh items list after adding
-        }
-    }
-
-    // Function to fetch and display items from Supabase
-    async function fetchItems() {
-        const { data, error } = await supabase.from('items').select('*');
-        if (error) {
-            console.error('Error fetching items:', error);
-            return;
-        }
-
-        const adminContainer = document.getElementById('admin-items');
-        adminContainer.innerHTML = ''; // Clear the current list
-
-        data.forEach((item, index) => {
-            const itemDiv = document.createElement('div');
-            itemDiv.innerHTML = `
-                <img src="${item.img}" alt="${item.name}" style="max-width: 100px;">
-                <p><strong><a href="${item.link}" target="_blank">${item.name}</a></strong></p>
-                <p>UPC: ${item.upc}</p>
-                <p>Quantity: <input type="number" value="${item.quantity}" onchange="updateQuantity(${item.id}, this.value)"></p>
-                <button onclick="deleteItem(${item.id})">Delete Item</button>
-            `;
-            adminContainer.appendChild(itemDiv);
-        });
-    }
-
-    // Function to update item quantity in Supabase
-    async function updateQuantity(itemId, newQuantity) {
-        const { data, error } = await supabase
-            .from('items')
-            .update({ quantity: parseInt(newQuantity, 10) })
-            .eq('id', itemId);
-
-        if (error) {
-            console.error('Error updating quantity:', error);
-        } else {
-            alert('Quantity updated');
-        }
-    }
-
-    // Function to delete an item from Supabase
-    async function deleteItem(itemId) {
-        const { data, error } = await supabase
-            .from('items')
-            .delete()
-            .eq('id', itemId);
-
-        if (error) {
-            console.error('Error deleting item:', error);
-        } else {
-            alert('Item deleted');
-            fetchItems(); // Refresh items list after deletion
-        }
-    }
-
-    // Function to download items as JSON (optional feature)
-    function downloadItems() {
-        const items = loadFromCookies();
-        const jsonData = JSON.stringify(items, null, 2);
-        const blob = new Blob([jsonData], { type: 'application/json' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'items.json';
-        link.click();
-    }
-
-    // Load items on page load
-    window.onload = fetchItems;
-</script>
 
 </body>
 </html>
